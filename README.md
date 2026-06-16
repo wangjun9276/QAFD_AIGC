@@ -1,2 +1,120 @@
-# QAFD_AIGC
-Official code for our work 'Quality-Guided Forgery Adapter for Generalizable AIGC Image Detection'
+# QAFD / IQAG Clean Test Project
+
+This version is organized around **`test_IQAG.py` as the only evaluation
+entry point**. Machine-specific paths, inactive experiment commands, duplicate
+scripts, cached files, and unrelated model families have been removed.
+
+## Project structure
+
+```text
+QAFD_clean/
+├── test_IQAG.py                  # primary evaluation entry
+├── configs/
+│   ├── datasets.py               # default benchmark generator lists
+│   └── datasets.example.json     # dataset-root configuration template
+├── data/
+│   └── test_dataset.py           # path discovery, transforms, IQA prompts
+├── models/
+│   ├── iqag.py                   # IQAG backbone and inference wrapper
+│   ├── clip_gemdwt/              # required custom CLIP implementation
+│   ├── ffcresnet/                # required frequency module
+│   ├── loralib/                  # optional LoRA support
+│   └── dctlayer.py               # required model dependency
+├── utils/
+│   ├── metrics.py
+│   └── runtime.py
+├── scripts/test.sh               # one portable example command
+├── requirements.txt
+└── REMOVED_FILES.md
+```
+
+## 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## 2. Prepare paths
+
+Copy the dataset template and replace every placeholder with the actual path:
+
+```bash
+cp configs/datasets.example.json configs/datasets.json
+```
+
+Place the CLIP checkpoint at `pretrained/ViT-L-14.pt`, or pass a valid local
+path through `--clip-checkpoint`.
+
+## 3. Run evaluation
+
+```bash
+python test_IQAG.py \
+  --dataset-config configs/datasets.json \
+  --datasets cnnspot genimage \
+  --checkpoint checkpoints/IQAG_best.pth \
+  --clip-checkpoint pretrained/ViT-L-14.pt \
+  --iqa-csv-dir /path/to/liqe_test_csvs \
+  --batch-size 24 \
+  --device cuda:0 \
+  --output-dir results/iqag_test
+```
+
+To evaluate selected generators from one dataset:
+
+```bash
+python test_IQAG.py \
+  --dataset-config configs/datasets.json \
+  --datasets genimage \
+  --generators ADM Midjourney \
+  --checkpoint checkpoints/IQAG_best.pth \
+  --clip-checkpoint pretrained/ViT-L-14.pt
+```
+
+## IQA prompt CSV
+
+The recommended CSV layout is:
+
+```csv
+image_path,label,iqa_prompt
+/path/to/image.png,1,"a photo of a landscape with blur artifacts, which has a perceptual quality of 3.2"
+```
+
+When `--iqa-csv-dir DIR` is used, the script searches for:
+
+```text
+DIR/<dataset>/<generator>.csv
+```
+
+If no CSV is found, the test uses a label-independent neutral IQA prompt. It
+never generates the IQA prompt from the ground-truth real/fake label.
+
+## Outputs
+
+The output directory contains:
+
+- `predictions/<dataset>/<generator>.csv`: per-image probabilities;
+- `summary.csv`: per-generator metrics;
+- `summary.json`: complete configuration and metric summary.
+
+For every generator, the script reports:
+
+- classification-head scores;
+- prompt-similarity scores;
+- fused scores: `classification + fusion_weight × similarity`;
+- ACC, AUC, AP, real-class accuracy, and fake-class accuracy.
+
+## Important corrections relative to the original test code
+
+1. The active entry now performs benchmark evaluation instead of only FLOPs.
+2. Training-only command-line arguments and commented weight alternatives were removed.
+3. Checkpoint, CLIP, data, result, and IQA paths are explicit parameters.
+4. Ground-truth-label leakage in the old IQA token construction was removed.
+5. Similarity is computed per image-text pair instead of forming a batch-to-batch
+   similarity matrix and averaging across unrelated samples.
+6. CPU/device handling, `map_location`, missing-path checks, and CSV summaries
+   were added.
+7. FLOPs calculation is optional through `--profile-flops`.
+
+The two corrections involving IQA prompts and paired similarity can change
+numerical results compared with the old script, but they remove invalid
+ground-truth leakage and batch-composition dependence.
