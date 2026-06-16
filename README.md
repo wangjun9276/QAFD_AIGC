@@ -103,18 +103,4 @@ For every generator, the script reports:
 - fused scores: `classification + fusion_weight × similarity`;
 - ACC, AUC, AP, real-class accuracy, and fake-class accuracy.
 
-## Important corrections relative to the original test code
 
-1. The active entry now performs benchmark evaluation instead of only FLOPs.
-2. Training-only command-line arguments and commented weight alternatives were removed.
-3. Checkpoint, CLIP, data, result, and IQA paths are explicit parameters.
-4. Ground-truth-label leakage in the old IQA token construction was removed.
-5. Similarity is computed per image-text pair instead of forming a batch-to-batch
-   similarity matrix and averaging across unrelated samples.
-6. CPU/device handling, `map_location`, missing-path checks, and CSV summaries
-   were added.
-7. FLOPs calculation is optional through `--profile-flops`.
-
-The two corrections involving IQA prompts and paired similarity can change
-numerical results compared with the old script, but they remove invalid
-ground-truth leakage and batch-composition dependence.
