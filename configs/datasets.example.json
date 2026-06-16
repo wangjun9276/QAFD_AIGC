@@ -1,0 +1,37 @@
+{
+  "cnnspot": {
+    "root": "/path/to/CNNspot/test"
+  },
+  "genimage": {
+    "root": "/path/to/GenImage/test"
+  },
+  "tan": {
+    "root": "/path/to/UnivBench/testset/images/Tan"
+  },
+  "ojha": {
+    "root": "/path/to/UnivBench/testset/images/UnivFD",
+    "real_imagenet": "/path/to/UnivBench/testset/images/UnivFD/imagenet/0_real",
+    "real_laion": "/path/to/UnivBench/testset/images/UnivFD/laion/0_real"
+  },
+  "drct": {
+    "root": "/path/to/UnivBench/testset/images/DRCT",
+    "real_root": "/path/to/UnivBench/testset/images/DRCT/cocoval2017"
+  },
+  "vlmd": {
+    "root": "/path/to/UnivBench/testset/images/VLMdetect",
+    "real_root": "/path/to/UnivBench/testset/images/VLMdetect/Real"
+  },
+  "dire": {
+    "root": "/path/to/DIRE/test"
+  },
+  "wildrf": {
+    "root": "/path/to/WildRF/test"
+  },
+  "fakebench": {
+    "root": "/path/to/FakeBench"
+  },
+  "deepfake24": {
+    "root": "/path/to/Deepfake24/image-data",
+    "real_root": "/path/to/COCO/test2017"
+  }
+}
